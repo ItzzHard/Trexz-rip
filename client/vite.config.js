@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://trexz-b.onrender.com",
+        target: "https://trexzb.onrender.com",
         changeOrigin: true,
         secure: false,
         ws: true,
