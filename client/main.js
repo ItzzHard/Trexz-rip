@@ -329,23 +329,38 @@ async function setupDiscordSdk() {
   });
 
   // Retrieve an access_token from your activity's server
-  const response = await fetch("/.proxy/api/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      code,
-    }),
-  });
-  const { access_token } = await response.json();
+  try {
+    const response = await fetch("/.proxy/api/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code,
+      }),
+    });
 
-  // Authenticate with Discord client (using the access_token)
-  auth = await discordSdk.commands.authenticate({
-    access_token,
-  });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error response:", errorText);
+      throw new Error(`Request failed: ${response.status}`);
+    }
 
-  if (auth == null) {
-    throw new Error("Authenticate command failed");
+    const data = await response.json();
+    console.log("Token exchange successful");
+
+    // Authenticate with Discord client (using the access_token)
+    auth = await discordSdk.commands.authenticate({
+      access_token: data.access_token,
+    });
+
+    if (auth == null) {
+      throw new Error("Authenticate command failed");
+    }
+
+    return auth;
+  } catch (error) {
+    console.error("Error during authentication:", error);
+    throw error;
   }
 }
